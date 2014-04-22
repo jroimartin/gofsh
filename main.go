@@ -18,13 +18,15 @@ var (
 func main() {
 	flag.Parse()
 	log.Printf("Listening on %s (root=%s)\n", *addr, *root)
-	if err := http.ListenAndServe(*addr, http.HandlerFunc(logHandler)); err != nil {
+	fileHandler := http.FileServer(http.Dir(*root))
+	if err := http.ListenAndServe(*addr, handlerLog(fileHandler)); err != nil {
 		log.Fatalln("Error:", err)
 	}
 }
 
-func logHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("%s - %s\n", r.RemoteAddr, r.RequestURI)
-	fileHandler := http.FileServer(http.Dir(*root))
-	fileHandler.ServeHTTP(w, r)
+func handlerLog(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("%s - %s %s\n", r.RemoteAddr, r.Method, r.RequestURI)
+		handler.ServeHTTP(w, r)
+	})
 }
