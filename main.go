@@ -19,12 +19,12 @@ func main() {
 	flag.Parse()
 	log.Printf("Listening on %s (root=%s)\n", *addr, *root)
 	fileHandler := http.FileServer(http.Dir(*root))
-	if err := http.ListenAndServe(*addr, handlerLog(fileHandler)); err != nil {
+	if err := http.ListenAndServe(*addr, logHandler(fileHandler)); err != nil {
 		log.Fatalln("Error:", err)
 	}
 }
 
-func handlerLog(handler http.Handler) http.Handler {
+func logHandler(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("%s - %s %s\n", r.RemoteAddr, r.Method, r.RequestURI)
 		handler.ServeHTTP(w, r)
